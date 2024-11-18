@@ -1,0 +1,97 @@
+************************************************JOINS***********************************************************
+
+Task--write a query to find out all the products which are not part of orderdetails
+
+#Display productname,code and description 
+select productcode,productname,textdescription
+from products p inner join productlines pl
+on p.productline=p1.productline-----using(columnname) -> only when both column names is same
+limit 2;
+
+use classicmodel;
+select *from orders;
+select *from orderdetails;
+select *from products;
+select *from productlines;
+select *from employees;
+select *from offices;
+select *from payments;
+select *from customers;
+
+
+select o.ordernumber,o.status,
+sum(od.quantityordered*od.priceeach) "Total sales"
+from orders o inner join orderdetails od
+on o.ordernumber=od.ordernumber
+group by o.ordernumber
+
+
+select od.ordernumber, od.quantityordered, od.priceeach,
+o.orderdate,p.productname,c.customername
+from orderdetails od
+inner join orders o using(ordernumber)
+inner join products p using(productcode)
+inner join customers c using(customername)
+order by ordernumber
+limit 10;
+========================================================
+
+select ordernumber,productname,msrp,priceEach
+from products p
+inner join orderdetails on p.productcode=o.productcode
+and p.msrp>o.priceEach
+where
+p.productcode='S10_1678'
+and o.priceEach>84
+
+
+select customername,c.customernumber,o.ordernumber
+from customers c left join orders o
+on c.customernumber=o.customernumber
+where o.ordernumber is null
+
+
+select p.productcode,p.productname,o.ordernumber 
+from products p
+left join orderdetails o
+using (productcode)
+where ordernumber is null;
+
+
+select customername,e.firstname,p.checknumber,p.amount
+from customers c left join employees e
+on c.salesRepEmployeeNumber=e.employeenumber
+left join payments p
+on c.customernumber=p.customernumber
+where e.employeenumber is null
+and p.checknumber is null;
+
+*******************************SUBQUERIES*****************************************
+
+#all the employees living in japan
+select concat(firstname," ",lastname) "Employees" from employees
+where officecode=(
+select officecode from offices where country='Japan');
+
+select concat(firstname," ",lastname) "Employees" from employees
+where officecode in(
+select officecode from offices where country='USA');
+
+#which customer made maximum payments
+select customername from customers
+where customernumber in(
+select customernumber from payments
+where amount > (select avg(amount) from payments)
+);
+select customername,country,state from customers where(country,state) in
+(
+select country,state from offices where country='USA'
+);
+
+select ordernumber,productcode from orderdetails od
+where exists(
+select 1 from products p where p.productcode=od.productcode);
+
+select productcode from products p
+where not exists(
+select 1 from orderdetails od where od.productcode=p.productcode);
